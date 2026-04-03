@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple To-Do</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23355c4b'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='%23f8faf8' stroke-linecap='round' stroke-linejoin='round' stroke-width='6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="app-card" aria-labelledby="app-title">
+      <p class="eyebrow">Proof of Concept</p>
+      <h1 id="app-title">Simple To-Do</h1>
+      <p class="intro">
+        A lightweight task list for capturing what matters right now.
+      </p>
+
+      <form class="task-form" id="task-form">
+        <label class="sr-only" for="task-input">Add a task</label>
+        <input
+          id="task-input"
+          name="task"
+          type="text"
+          maxlength="120"
+          placeholder="Add a task..."
+          autocomplete="off"
+        >
+        <button type="submit">Add Task</button>
+      </form>
+
+      <p class="empty-state" id="empty-state">No tasks yet. Add one to get started.</p>
+
+      <section class="task-group" aria-labelledby="active-heading">
+        <div class="section-heading">
+          <h2 id="active-heading">Active</h2>
+          <span id="active-count" aria-live="polite">0</span>
+        </div>
+        <ul class="task-list" id="active-list"></ul>
+      </section>
+
+      <section class="task-group completed-group" aria-labelledby="completed-heading">
+        <div class="section-heading">
+          <h2 id="completed-heading">Completed</h2>
+          <span id="completed-count" aria-live="polite">0</span>
+        </div>
+        <ul class="task-list" id="completed-list"></ul>
+      </section>
+    </section>
+  </main>
+
+  <template id="task-template">
+    <li class="task-item">
+      <label class="task-toggle">
+        <input class="task-checkbox" type="checkbox">
+        <span class="checkmark" aria-hidden="true"></span>
+      </label>
+      <span class="task-text"></span>
+      <button class="delete-button" type="button" aria-label="Delete task">Delete</button>
+    </li>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
