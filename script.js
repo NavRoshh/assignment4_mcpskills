@@ -1,5 +1,3 @@
-const STORAGE_KEY = "simple-todo-poc.tasks";
-
 const form = document.querySelector("#task-form");
 const input = document.querySelector("#task-input");
 const emptyState = document.querySelector("#empty-state");
@@ -9,78 +7,46 @@ const activeCount = document.querySelector("#active-count");
 const completedCount = document.querySelector("#completed-count");
 const taskTemplate = document.querySelector("#task-template");
 
-let tasks = loadTasks();
+const app = window.TodoApp.createTodoApp({
+  storage: window.TodoApp.createLocalStorageAdapter(),
+  createId: () => crypto.randomUUID(),
+});
 
-render();
+let snapshot = app.initialize();
+
+render(snapshot);
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const text = input.value.trim();
-  if (!text) {
+  const previousActiveCount = snapshot.activeCount;
+  snapshot = app.addTask(input.value);
+
+  if (snapshot.activeCount === previousActiveCount) {
     input.focus();
     return;
   }
 
-  tasks.unshift({
-    id: crypto.randomUUID(),
-    text,
-    completed: false,
-  });
-
-  saveTasks();
-  render();
+  render(snapshot);
   form.reset();
   input.focus();
 });
 
-function loadTasks() {
-  try {
-    const storedTasks = localStorage.getItem(STORAGE_KEY);
-    if (!storedTasks) {
-      return [];
-    }
-
-    const parsed = JSON.parse(storedTasks);
-    return Array.isArray(parsed)
-      ? parsed.filter(isValidTask)
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-function isValidTask(task) {
-  return Boolean(
-    task &&
-    typeof task.id === "string" &&
-    typeof task.text === "string" &&
-    typeof task.completed === "boolean"
-  );
-}
-
-function render() {
+function render(currentSnapshot) {
   activeList.replaceChildren();
   completedList.replaceChildren();
 
-  const activeTasks = tasks.filter((task) => !task.completed);
-  const completedTasks = tasks.filter((task) => task.completed);
-
-  activeTasks.forEach((task) => {
+  currentSnapshot.activeTasks.forEach((task) => {
     activeList.append(createTaskElement(task));
   });
 
-  completedTasks.forEach((task) => {
+  currentSnapshot.completedTasks.forEach((task) => {
     completedList.append(createTaskElement(task));
   });
 
-  activeCount.textContent = String(activeTasks.length);
-  completedCount.textContent = String(completedTasks.length);
-  emptyState.hidden = tasks.length > 0;
+  activeCount.textContent = String(currentSnapshot.activeCount);
+  completedCount.textContent = String(currentSnapshot.completedCount);
+  emptyState.hidden = !currentSnapshot.isEmpty;
 }
 
 function createTaskElement(task) {
@@ -97,20 +63,13 @@ function createTaskElement(task) {
   deleteButton.setAttribute("aria-label", `Delete "${task.text}"`);
 
   checkbox.addEventListener("change", () => {
-    tasks = tasks.map((currentTask) =>
-      currentTask.id === task.id
-        ? { ...currentTask, completed: checkbox.checked }
-        : currentTask
-    );
-
-    saveTasks();
-    render();
+    snapshot = app.setTaskCompleted(task.id, checkbox.checked);
+    render(snapshot);
   });
 
   deleteButton.addEventListener("click", () => {
-    tasks = tasks.filter((currentTask) => currentTask.id !== task.id);
-    saveTasks();
-    render();
+    snapshot = app.deleteTask(task.id);
+    render(snapshot);
     input.focus();
   });
 
